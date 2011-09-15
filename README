@@ -1,0 +1,6 @@
+Introduction:
+ the fastibatis tool is related to ibatis2 + spring.
+ it is used to generate the tedious code in the DAO and Service.
+ it is the assistant for the ibator which is also a code generation tool.
+ if you want to know more about ibator,
+ see http://ibatis.apache.org/docs/tools/ibator/index.html

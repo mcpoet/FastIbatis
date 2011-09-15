@@ -1,0 +1,6 @@
+1.0.1 (2011/08/23)
+ + Add refresh java project after code generation automatically
+ + Add customize parameter type and return type 
+ + Update format javadoc
+ + Update make the dialog more clean and tidy
+ + Add i18n Support (zh_CN,en_US)

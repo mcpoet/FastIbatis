@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+		<viewerContribution
+			targetID="org.eclipse.core.runtime.xml.source.EditorContext"
+			id="net.sf.fast.ibatis.popup.actions">
+			<action
+				label="Fast ibatis Code"
+				class="net.sf.fast.ibatis.popup.actions.FastibatisCodeActionDelegate"
+				menubarPath="additions"
+				icon="$nl$/icons/fast_ibatis.gif"
+				id="net.sf.fast.ibatis.popup.actions.FastibatisCodeActionDelegate">
+			</action>
+		</viewerContribution>
+		<viewerContribution
+			targetID="org.eclipse.core.runtime.xml.source2.EditorContext"
+			id="net.sf.fast.ibatis.popup.actions">
+			<action
+				label="Fast ibatis Code"
+				class="net.sf.fast.ibatis.popup.actions.FastibatisCodeActionDelegate"
+				menubarPath="additions"
+				icon="$nl$/icons/fast_ibatis.gif"
+				id="net.sf.fast.ibatis.popup.actions.FastibatisCodeActionDelegate">
+			</action>
+		</viewerContribution>
+		
+   </extension>
+
+</plugin>
