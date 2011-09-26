@@ -1,3 +1,9 @@
+1.0.2 (Planning)
+ + Add SQL id judgement,it will avoid rewriting the same functional SQL grammar
+ for example:
+ a. Select name from user
+ b. Select * from user
+ the two sql above have the resemble result,so we can combine to one.
 1.0.1 (2011/08/23)
  + Add refresh java project after code generation automatically
  + Add customize parameter type and return type 

@@ -17,6 +17,7 @@
 package net.sf.fast.ibatis.popup.actions;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.fast.ibatis.build.AbstractCodeBuilder;
@@ -92,6 +93,12 @@ public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 				MessageDialog.openWarning(shell, "Warning", Fasti18n.getString("not_the_effective_node"));
 				return;
 			}
+			String similarSQL = getSimilarSQLId(ibatisSqlMapIdName,file);
+			if(similarSQL!=null) {
+				boolean b = MessageDialog.openConfirm(shell, Fasti18n.getString("Confirm"),String.format("%s", Fasti18n.getString("similar_sql")));
+				if(!b)
+					return;
+			}
 			FastIbatisDialog dialog = new FastIbatisDialog(shell);
 			final FastIbatisConfig fc = dialog.open(ibatisSqlMapIdName,
 					handleType);
@@ -124,7 +131,13 @@ public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 		}
 
 	}
-
+	/**
+	 * get from tables to avoid writing resemble sql.
+	 * @return
+	 */
+	private String getSimilarSQLId(String id,IFile file) {
+		return "";
+	}
 	private void generateFastIbatisCode(FastIbatisConfig fc, IFile file) {
 		try {
 			String xmlFileName = file.getName();

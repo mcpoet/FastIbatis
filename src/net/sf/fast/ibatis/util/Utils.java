@@ -152,7 +152,6 @@ public class Utils {
 		}
 		return sb.toString().trim();
 	}
-
 	public static IFile getSuitableIFile(String xmlFilePath,
 			String xmlFileName, GenerateFileType type) {
 		String a1 = Utils.convertIbatisXml2JavaFile(xmlFileName, type);
