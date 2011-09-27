@@ -136,6 +136,11 @@ public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 	 * @return
 	 */
 	private String getSimilarSQLId(String id,IFile file) {
+		try {
+			
+		}catch(Exception e) {
+			
+		}
 		return "";
 	}
 	private void generateFastIbatisCode(FastIbatisConfig fc, IFile file) {

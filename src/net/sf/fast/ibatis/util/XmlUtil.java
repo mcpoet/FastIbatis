@@ -89,8 +89,9 @@ public class XmlUtil {
 			for (Iterator i = root.elementIterator("select"); i.hasNext();) {
 				Element selectPart = (Element) i.next();
 				String idValue = selectPart.attributeValue("id");
-				if(idValue!=null&&idValue.length()>0) {
-					theMap.put(idValue,filterFromtables(selectPart.asXML()));
+				String tbs = filterFromtables(selectPart.asXML());
+				if(idValue!=null&&tbs!=null) {
+					theMap.put(idValue,tbs);
 				}
 			}
 		} catch (Exception e) {
@@ -98,18 +99,71 @@ public class XmlUtil {
 		}
 		return theMap;
 	}
+	
+	public static void main(String args[]) {
+		String sql = "select * from table1";
+		String sql2 = "select * from a1,b1 where a1.id = b1.id";		
+		String str = filterFromtables(sql2);
+		System.out.println(str);
+	}
 	public static String filterFromtables(String xmlText) {
-		String[] additive = new String[]{" ","\n"};				
+		String[] additive = new String[]{" from "," from\n","\nfrom ","\nfrom\n"};				
 		String lowXmlText = xmlText.toLowerCase();
+		lowXmlText = lowXmlText.replaceAll(", ",",");
+		lowXmlText = lowXmlText.replaceAll(" ,",",");
+		StringBuffer sb = new StringBuffer();
 		int pos = -1;
-		for(int i=0;i<additive.length;i++)
-			for(int j=0;j<additive.length;j++) {
-				String key = additive[i]+"from"+additive[j];
-				pos = lowXmlText.indexOf(key);
-				if(pos>=0)
-					break;
+		for(int i=0;i<additive.length;i++) {
+			String key = additive[i];
+			pos = lowXmlText.indexOf(key);
+			if(pos>=0) {
+				pos += key.length();
+				break;
 			}
-		
-		return null;
+		}
+		if(pos==-1)
+			return null;
+		boolean isContainComma = true;
+		int startPos = formatStartPos(lowXmlText,pos);
+		while(isContainComma) {
+			StringBuffer xb = new StringBuffer();
+			for(int i=startPos;i<lowXmlText.length();i++) {
+				if(lowXmlText.charAt(i)==',') {
+					isContainComma = true;
+					xb.append(lowXmlText.charAt(i));					
+					startPos = i+1;
+					break;
+				} else if(lowXmlText.charAt(i)==' ') {
+					isContainComma = false;
+					startPos = i+1;
+					break;
+				} else {
+					xb.append(lowXmlText.charAt(i));
+					isContainComma = false;
+				}
+			}
+			sb.append(xb);
+		}
+		return sb.toString();
+	}
+	public static int formatStartPos(String text,int pos) {
+		int startPos = pos;
+		for(int i=startPos;i<text.length();i++) {
+			if(isSpecialChar(text.charAt(i)))
+				continue;
+			else {
+				startPos=i;
+				break;
+			}
+		}
+		return startPos;
+	}
+	public static boolean isSpecialChar(char c) {
+		String[] prototype = new String[]{" ","\n"};
+		for(int i=0;i<prototype.length;i++) {
+			if(String.valueOf(c).equals(prototype[i]))
+				return true;
+		}
+		return false;
 	}
 }
