@@ -17,7 +17,7 @@
 package net.sf.fast.ibatis.popup.actions;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
+import java.text.MessageFormat;
 import java.util.Map;
 
 import net.sf.fast.ibatis.build.AbstractCodeBuilder;
@@ -70,7 +70,7 @@ import org.eclipse.ui.part.FileEditorInput;
 public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 		IViewActionDelegate {
 
-	private Shell shell;
+	private Shell shell;	
 	private String ibatisSqlMapIdName;
 
 	/**
@@ -79,7 +79,29 @@ public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 	public FastibatisCodeActionDelegate() {
 		super();
 	}
-
+	private String getHandleType(HandleType type) {
+		if(type==HandleType.INSERT)
+			return "insert";
+		else if(type==HandleType.SELECT)
+			return "select";
+		else if(type==HandleType.UPDATE)
+			return "update";
+		else if(type==HandleType.DELETE)
+			return "delete";
+		else
+			return "none";
+	}
+	private HandleType convertHandleType(String src) {
+		if(src.equals("select"))
+			return HandleType.SELECT;
+		else if(src.equals("update"))
+			return HandleType.UPDATE;
+		else if(src.equals("delete"))
+			return HandleType.DELETE;
+		else if(src.equals("insert"))
+			return HandleType.INSERT;
+		else return HandleType.NONE;
+	}
 	/**
 	 * @see IActionDelegate#run(IAction)
 	 */
@@ -88,14 +110,36 @@ public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 			final IFile file = ((FileEditorInput) PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getActivePage()
 					.getActiveEditor().getEditorInput()).getFile();
-			HandleType handleType = getHandleType(file);
+			final StringBuffer hdType = new StringBuffer();
+			final StringBuffer sb = new StringBuffer();
+			ProgressMonitorDialog openDlg = new ProgressMonitorDialog(shell);
+			openDlg.run(true, true, new IRunnableWithProgress() {
+				public void run(IProgressMonitor monitor)
+						throws InvocationTargetException, InterruptedException {
+					monitor.beginTask(Fasti18n.getString("start_opening")+"...", 1);
+					try {
+						HandleType handleType = getHandleType(file);
+						hdType.append(getHandleType(handleType));
+						String similarSQL = getSimilarSQLId(ibatisSqlMapIdName,file);
+						if(similarSQL!=null)
+							sb.append(similarSQL);
+						monitor.worked(1);
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						monitor.done();
+					}
+
+				}
+			});
+			HandleType handleType = convertHandleType(hdType.toString());
 			if (handleType == HandleType.NONE) {
 				MessageDialog.openWarning(shell, "Warning", Fasti18n.getString("not_the_effective_node"));
 				return;
 			}
-			String similarSQL = getSimilarSQLId(ibatisSqlMapIdName,file);
-			if(similarSQL!=null) {
-				boolean b = MessageDialog.openConfirm(shell, Fasti18n.getString("Confirm"),String.format("%s", Fasti18n.getString("similar_sql")));
+			
+			if(sb!=null&&sb.length()>0) {
+				boolean b = MessageDialog.openConfirm(shell, Fasti18n.getString("Confirm"),MessageFormat.format(Fasti18n.getString("similar_sql"), sb.toString()));
 				if(!b)
 					return;
 			}
@@ -105,8 +149,8 @@ public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 			fc.setMethodName(ibatisSqlMapIdName);
 			if (!dialog.isDAOGenerate() && !dialog.isServiceGenerate()) {
 				return;
-			}
-
+			}					
+			
 			ProgressMonitorDialog progressDlg = new ProgressMonitorDialog(shell);
 			progressDlg.run(true, true, new IRunnableWithProgress() {
 				public void run(IProgressMonitor monitor)
@@ -136,12 +180,45 @@ public class FastibatisCodeActionDelegate implements IEditorActionDelegate,
 	 * @return
 	 */
 	private String getSimilarSQLId(String id,IFile file) {
-		try {
-			
+		StringBuffer sb = new StringBuffer();
+		try {			
+			String xmlFilePath = file.getLocation().makeAbsolute().toFile()
+					.getAbsolutePath();
+			Map<String,String> sqlIdTables = XmlUtil.getSelectFromtableSets(xmlFilePath);
+			String strs = sqlIdTables.get(this.ibatisSqlMapIdName);
+			if(strs!=null) {
+				String[] arr1 = strs.split(",");
+				for(String key:sqlIdTables.keySet()) {
+					if(!key.equals(this.ibatisSqlMapIdName)) {
+						String tbs = sqlIdTables.get(key);
+						String[] arr2 = tbs.split(",");
+						if(isArraySameContent(arr1,arr2))
+							sb.append(key).append(",");
+					}
+				}
+			}
 		}catch(Exception e) {
 			
 		}
-		return "";
+		sb.deleteCharAt(sb.length()-1);
+		return sb.toString();
+	}
+	private boolean isArraySameContent(String[] arr1,String arr2[]) {
+		if(arr1==null||arr2==null||arr1.length!=arr2.length)
+			return false;
+		for(int i=0;i<arr1.length;i++) {
+			String str = arr1[i];
+			boolean isfind = false;
+			for(int j=0;j<arr2.length;j++) {
+				if(str.equalsIgnoreCase(arr2[j])) {
+					isfind = true;
+					break;
+				}
+			}
+			if(!isfind)
+				return false;
+		}
+		return true;
 	}
 	private void generateFastIbatisCode(FastIbatisConfig fc, IFile file) {
 		try {
